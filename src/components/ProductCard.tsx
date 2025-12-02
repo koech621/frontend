@@ -1,62 +1,64 @@
 import type { Product } from "../store/productSlice";
+import { FaEdit, FaTrash, FaCartPlus } from "react-icons/fa";
 
 interface ProductCardProps extends Product {
-  onAddToCart?: (product: Product) => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onAddToCart?: () => void;
 }
 
 export default function ProductCard({
-  id,
-  farmerId,
-  farmerName,
-  name,
+  product_name,
   category,
   price,
-  stockQuantity,
+  stock_quantity,
   description,
+  onEdit,
+  onDelete,
   onAddToCart,
 }: ProductCardProps) {
   return (
-    <div className="border rounded-lg shadow-sm p-4 bg-white hover:shadow-md transition flex flex-col justify-between">
-      {/* Product Info */}
-      <div>
-        <h2 className="font-semibold text-lg mb-1">{name}</h2>
-        {farmerName && (
-          <p className="text-gray-500 text-sm mb-1">Farmer: {farmerName}</p>
+    <div className="border p-4 rounded shadow bg-white">
+      <h3 className="text-lg font-semibold">{product_name}</h3>
+      <p>Category: {category}</p>
+      <p>Price: Ksh {price}</p>
+      <p>Stock: {stock_quantity}</p>
+      {description && <p className="text-gray-500">{description}</p>}
+
+      <div className="mt-3 flex gap-3">
+        {/* Add to Cart Button */}
+        {onAddToCart && (
+          <button
+            onClick={onAddToCart}
+            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+          >
+            <FaCartPlus />
+            Add to Cart
+          </button>
         )}
-        <p className="text-gray-500 text-sm mb-1">Category: {category}</p>
-        <p className="text-green-700 font-bold mb-1">${price}</p>
-        <p
-          className={`text-sm mb-2 ${
-            stockQuantity === 0 ? "text-red-500 font-bold" : "text-gray-600"
-          }`}
-        >
-          {stockQuantity === 0 ? "Out of Stock" : `Stock: ${stockQuantity}`}
-        </p>
-        {description && (
-          <p className="text-gray-600 text-sm">{description}</p>
+
+        {/* Edit Button */}
+        {onEdit && (
+          <button
+            className="flex items-center gap-2 bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500"
+            onClick={onEdit}
+          >
+            <FaEdit />
+            Edit
+          </button>
+        )}
+
+        {/* Delete Button */}
+        {onDelete && (
+          <button
+            className="flex items-center gap-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+            onClick={onDelete}
+          >
+            <FaTrash />
+            Delete
+          </button>
         )}
       </div>
-
-      {/* Add to Cart Button */}
-      {stockQuantity > 0 && onAddToCart && (
-        <button
-          className="mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-          onClick={() =>
-            onAddToCart({
-              id,
-              farmerId,
-              farmerName,
-              name,
-              category,
-              price,
-              stockQuantity,
-              description,
-            })
-          }
-        >
-          Add to Cart
-        </button>
-      )}
     </div>
   );
 }

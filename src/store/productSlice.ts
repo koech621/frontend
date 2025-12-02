@@ -4,12 +4,11 @@ import { getProducts, createProduct, updateProduct, deleteProduct } from "../api
 
 export interface Product {
   id: number;
-  farmerId: number;
-  farmerName?: string;
-  name: string;
+  farmer_id: number;
+  product_name: string;
   category: string;
   price: number;
-  stockQuantity: number;
+  stock_quantity: number;
   description?: string;
 }
 

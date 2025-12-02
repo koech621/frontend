@@ -1,38 +1,51 @@
 import axios from "axios";
 import type { Product } from "../store/productSlice";
 
-const api = axios.create({
-  baseURL: "http://localhost:3000/api/products", // your backend URL
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+const API_BASE = "http://localhost:3000/api/products";
 
-// FETCH all products (GET)
+// Helper to get the token from localStorage
+const getToken = () => localStorage.getItem("token");
+
 export const getProducts = async (): Promise<Product[]> => {
-  const res = await api.get("/products");
+  const token = getToken();
+
+  const res = await axios.get(API_BASE, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  });
+
   return res.data;
 };
 
-// FETCH one product by ID (GET)
 export const getProductById = async (id: number): Promise<Product> => {
-  const res = await api.get(`/products/${id}`);
+  const token = getToken();
+  const res = await axios.get(`${API_BASE}/${id}`, {
+    headers: { Authorization: token ? `Bearer ${token}` : "" },
+  });
   return res.data;
 };
 
-// CREATE new product (POST)
 export const createProduct = async (product: Omit<Product, "id">): Promise<Product> => {
-  const res = await api.post("/products", product);
+  const token = getToken();
+  const res = await axios.post(API_BASE, product, {
+    headers: { Authorization: token ? `Bearer ${token}` : "" },
+  });
   return res.data;
 };
 
-// UPDATE product (PUT)
 export const updateProduct = async (id: number, updates: Partial<Product>): Promise<Product> => {
-  const res = await api.put(`/products/${id}`, updates);
+  const token = getToken();
+  const res = await axios.put(`${API_BASE}/${id}`, updates, {
+    headers: { Authorization: token ? `Bearer ${token}` : "" },
+  });
   return res.data;
 };
 
-// DELETE product (DELETE)
 export const deleteProduct = async (id: number): Promise<void> => {
-  await api.delete(`/products/${id}`);
+  const token = getToken();
+  await axios.delete(`${API_BASE}/${id}`, {
+    headers: { Authorization: token ? `Bearer ${token}` : "" },
+  });
 };

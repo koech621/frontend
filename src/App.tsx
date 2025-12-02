@@ -1,3 +1,4 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import type { RootState } from "./store/store";
@@ -10,18 +11,18 @@ import ProtectedRoute from "./components/protectedRoute";
 import LandingPage from "./pages/customer/landingpage";
 import CustomerProducts from "./pages/customer/products";
 import CustomerOrders from "./pages/customer/order";
-import FarmerProducts from "./pages/farmer/products";
+import FarmerDashboard from "./pages/farmer/farmerdashboard";
+import AddProductForm from "./components/AddProductform";
 import FarmerOrders from "./pages/farmer/order";
 import Login from "./pages/login";
 import Register from "./pages/register";
-
+import Payments from "./pages/customer/payment";
 
 export default function App() {
   const { isLoggedIn, role } = useSelector((state: RootState) => state.auth);
 
   return (
     <Router>
-      {/* Navbar always visible */}
       <Navbar />
 
       <Routes>
@@ -30,7 +31,6 @@ export default function App() {
         <Route path="/products" element={<CustomerProducts />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
 
         {/* Customer Pages */}
         <Route
@@ -41,13 +41,30 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+         path="/cart"
+             element={
+        <ProtectedRoute isAllowed={isLoggedIn && role === "customer"}>
+         <Payments />
+         </ProtectedRoute>
+  }
+/>
 
         {/* Farmer Pages */}
+        
         <Route
-          path="/farmer/products"
+          path="/farmer/dashboard"
           element={
             <ProtectedRoute isAllowed={isLoggedIn && role === "farmer"}>
-              <FarmerProducts />
+              <FarmerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/new"
+          element={
+            <ProtectedRoute isAllowed={isLoggedIn && role === "farmer"}>
+              <AddProductForm />
             </ProtectedRoute>
           }
         />
@@ -60,7 +77,7 @@ export default function App() {
           }
         />
 
-        {/* Catch all - redirect to home */}
+        {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

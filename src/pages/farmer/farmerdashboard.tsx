@@ -1,38 +1,128 @@
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store/store";
+import  { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import DashboardLayout from "../../components/Dashboardlayout";
+import ProductCard from "../../components/ProductCard";
+import { fetchProducts, removeProduct } from "../../store/productSlice";
+import type { RootState, AppDispatch } from "../../store/store";
+import type { Product } from "../../store/productSlice";
+import { FaPlus, FaClipboardList, FaTruck } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import AddProductForm from "../../components/AddProductform";
+
 
 export default function FarmerDashboard() {
-  const products = useSelector((state: RootState) => state.products.items);
-  const orders = useSelector((state: RootState) => state.order.items); // farmer orders slice later
+  const dispatch = useDispatch<AppDispatch>();
+  const { items, loading, error } = useSelector((state: RootState) => state.products);
+  const { user } = useSelector((state: RootState) => state.auth);
 
-  // Example metrics
-  const myProducts = products.filter(p => p.farmerId === 1); // replace with logged-in farmerId
-  const myOrders = orders.filter(o =>
-    o.items.some(i => i.farmerId === 1)
-  );
+  // Authorization guard (optional - route ProtectedRoute should already protect)
+  if (!user || user.role !== "farmer")
+    return (
+      <div className="p-6">
+        <p className="text-red-500">Not authorized</p>
+      </div>
+    );
 
-  const totalSales = myOrders.reduce((sum, o) => sum + o.total, 0);
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
+  const handleDelete = (id: number) => {
+    dispatch(removeProduct(id));
+  };
+
+  const myProducts: Product[] = items.filter((p) => p.farmer_id === user.id);
+
+  // Replace with real values when you wire orders/revenue into store
+  const totalProducts = myProducts.length;
+  const totalOrders = 0;
+  const totalRevenue = 0;
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Farmer Dashboard</h1>
+    <DashboardLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-semibold">Dashboard</h1>
+            <p className="text-sm text-gray-500">Welcome back, {user.full_name ?? "Farmer"}.</p>
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white shadow rounded-lg p-4">
-          <h2 className="font-semibold text-lg mb-2">Products</h2>
-          <p className="text-2xl font-bold">{myProducts.length}</p>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/farmer/new"
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-700 transition"
+            >
+              <FaPlus /> Add Product
+            </Link>
+
+            <Link
+              to="/farmer/orders"
+              className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 transition"
+            >
+              <FaClipboardList /> View Orders
+            </Link>
+          </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-4">
-          <h2 className="font-semibold text-lg mb-2">Orders</h2>
-          <p className="text-2xl font-bold">{myOrders.length}</p>
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded shadow p-4 flex items-center gap-4">
+            <div className="bg-green-50 p-3 rounded">
+              <FaPlus className="text-green-600" />
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">Total Products</div>
+              <div className="text-xl font-bold">{totalProducts}</div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded shadow p-4 flex items-center gap-4">
+            <div className="bg-blue-50 p-3 rounded">
+              <FaClipboardList className="text-blue-600" />
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">Total Orders</div>
+              <div className="text-xl font-bold">{totalOrders}</div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded shadow p-4 flex items-center gap-4">
+            <div className="bg-purple-50 p-3 rounded">
+              <FaTruck className="text-purple-600" />
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">Total Revenue</div>
+              <div className="text-xl font-bold">${totalRevenue}</div>
+            </div>
+          </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-4">
-          <h2 className="font-semibold text-lg mb-2">Total Sales</h2>
-          <p className="text-2xl font-bold">KES {totalSales}</p>
-        </div>
+        {/* Products section */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">My Products</h2>
+            <p className="text-sm text-gray-500">{totalProducts} items</p>
+          </div>
+
+          {loading && <p>Loading products...</p>}
+          {error && <p className="text-red-500">{error}</p>}
+
+          {myProducts.length === 0 ? (
+            <div className="bg-white p-6 rounded shadow text-gray-500">You have no products yet.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {myProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  {...product}
+                  onDelete={() => handleDelete(product.id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

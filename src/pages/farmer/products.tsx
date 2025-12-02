@@ -22,7 +22,7 @@ export default function Products() {
   };
 
   // Filter products belonging to this farmer
-  const myProducts: Product[] = items.filter((p) => p.farmerId === farmerId);
+  const myProducts: Product[] = items.filter((p) => p.farmer_id === farmerId);
 
   if (loading) {
     return <p className="p-6 text-center">Loading products...</p>;

@@ -1,12 +1,11 @@
-import type { JSX } from "react";
 import { Navigate } from "react-router-dom";
 
-interface ProtectedRouteProps {
+interface Props {
   isAllowed: boolean;
-  children: JSX.Element;
+  children: React.ReactNode;
 }
 
-export default function ProtectedRoute({ isAllowed, children }: ProtectedRouteProps) {
-  if (!isAllowed) return <Navigate to="/" replace />;
-  return children;
+export default function ProtectedRoute({ isAllowed, children }: Props) {
+  if (!isAllowed) return <Navigate to="/login" replace />;
+  return <>{children}</>;
 }
