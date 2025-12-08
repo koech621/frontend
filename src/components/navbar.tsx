@@ -39,11 +39,17 @@ export default function Navbar() {
     ],
     farmer: [
       { name: "Dashboard", path: "/farmer/Dashboard" },
-      { name: "Products", path: "/products" },
       { name: "Orders", path: "/orders" },
       { name: "Logistics", path: "/logistics" },
-      { name: "Payments", path: "/payments" },
+      { name: "Payments", path: "/farmer/payments" },
     ],
+    admin: [
+  { name: "Admin Dashboard", path: "/admin/dashboard" },
+  { name: "Manage Products", path: "/admin/products" },
+  { name: "Manage Users", path: "/admin/users" },
+  { name: "Orders", path: "/admin/orders" },
+],
+
   };
 
   // Determine which links to show

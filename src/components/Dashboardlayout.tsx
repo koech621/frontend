@@ -10,11 +10,27 @@ import {
   FaTachometerAlt,
 } from "react-icons/fa";
 
-interface Props {
-  children: React.ReactNode;
+interface NavItem {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
 }
 
-export default function DashboardLayout({ children }: Props) {
+interface Props {
+  children: React.ReactNode;
+  title?: string;
+  navItems?: NavItem[];
+}
+
+const defaultNavItems: NavItem[] = [
+  { to: "/farmer/dashboard", icon: <FaTachometerAlt className="text-green-700" />, label: "Dashboard" },
+  { to: "/farmer/products", icon: <FaBox className="text-green-700" />, label: "My Products" },
+  { to: "/farmer/orders", icon: <FaShoppingCart className="text-green-700" />, label: "Orders" },
+  { to: "/farmer/new", icon: <FaPlus className="text-green-700" />, label: "Add Product" },
+  { to: "/farmer/logistics", icon: <FaTruck className="text-green-700" />, label: "Logistics" },
+];
+
+export default function DashboardLayout({ children, title = "Farmer Panel", navItems = defaultNavItems }: Props) {
   const [open, setOpen] = useState(true);
 
   // helper for link classes (active)
@@ -35,7 +51,7 @@ export default function DashboardLayout({ children }: Props) {
           {open ? (
             <div className="flex items-center gap-2">
               <FaTachometerAlt className="text-green-700" />
-              <h1 className="text-lg font-bold text-green-700">Farmer Panel</h1>
+              <h1 className="text-lg font-bold text-green-700">{title}</h1>
             </div>
           ) : (
             <FaTachometerAlt className="text-green-700 mx-auto" />
@@ -51,30 +67,12 @@ export default function DashboardLayout({ children }: Props) {
         </div>
 
         <nav className="mt-4 flex flex-col">
-          <NavLink to="/farmer/dashboard" className={({ isActive }) => active(isActive)}>
-            <FaTachometerAlt className="text-green-700" />
-            {open && <span>Dashboard</span>}
-          </NavLink>
-
-          <NavLink to="/farmer/products" className={({ isActive }) => active(isActive)}>
-            <FaBox className="text-green-700" />
-            {open && <span>My Products</span>}
-          </NavLink>
-
-          <NavLink to="/farmer/orders" className={({ isActive }) => active(isActive)}>
-            <FaShoppingCart className="text-green-700" />
-            {open && <span>Orders</span>}
-          </NavLink>
-
-          <NavLink to="/farmer/new" className={({ isActive }) => active(isActive)}>
-            <FaPlus className="text-green-700" />
-            {open && <span>Add Product</span>}
-          </NavLink>
-
-          <NavLink to="/farmer/logistics" className={({ isActive }) => active(isActive)}>
-            <FaTruck className="text-green-700" />
-            {open && <span>Logistics</span>}
-          </NavLink>
+          {navItems.map((item) => (
+            <NavLink key={item.to} to={item.to} className={({ isActive }) => active(isActive)}>
+              {item.icon}
+              {open && <span>{item.label}</span>}
+            </NavLink>
+          ))}
         </nav>
       </aside>
 

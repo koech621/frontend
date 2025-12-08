@@ -1,18 +1,19 @@
-import  { useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DashboardLayout from "../../components/Dashboardlayout";
 import ProductCard from "../../components/ProductCard";
 import { fetchProducts, removeProduct } from "../../store/productSlice";
+import { fetchFarmerOrders } from "../../store/orderSlice";
 import type { RootState, AppDispatch } from "../../store/store";
 import type { Product } from "../../store/productSlice";
 import { FaPlus, FaClipboardList, FaTruck } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import AddProductForm from "../../components/AddProductform";
 
 
 export default function FarmerDashboard() {
   const dispatch = useDispatch<AppDispatch>();
   const { items, loading, error } = useSelector((state: RootState) => state.products);
+  const { items: orders } = useSelector((state: RootState) => state.order);
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Authorization guard (optional - route ProtectedRoute should already protect)
@@ -25,6 +26,7 @@ export default function FarmerDashboard() {
 
   useEffect(() => {
     dispatch(fetchProducts());
+    dispatch(fetchFarmerOrders());
   }, [dispatch]);
 
   const handleDelete = (id: number) => {
@@ -35,8 +37,8 @@ export default function FarmerDashboard() {
 
   // Replace with real values when you wire orders/revenue into store
   const totalProducts = myProducts.length;
-  const totalOrders = 0;
-  const totalRevenue = 0;
+  const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
 
   return (
     <DashboardLayout>
@@ -93,7 +95,7 @@ export default function FarmerDashboard() {
             </div>
             <div>
               <div className="text-sm text-gray-500">Total Revenue</div>
-              <div className="text-xl font-bold">${totalRevenue}</div>
+              <div className="text-xl font-bold">Ksh{totalRevenue}</div>
             </div>
           </div>
         </div>

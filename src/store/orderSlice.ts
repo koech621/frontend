@@ -1,20 +1,18 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type {PayloadAction} from "@reduxjs/toolkit";
+import api from "../services/api";
 
-// Example order type
-export interface OrderItem {
-  id: number;
-  name: string;
-  quantity: number;
-  price: number;
-  farmerId: number; 
-}
-
+// Order type matching backend
 export interface Order {
-  id: number;
-  items: OrderItem[];
-  total: number;
+  order_id: number;
+  user_id: number;
+  product_id: number;
+  market_id: number;
+  quantity: number;
+  total_amount: number;
+  order_date: string;
   status: string;
+  product_name?: string; // to be added
 }
 
 interface OrdersState {
@@ -29,10 +27,16 @@ const initialState: OrdersState = {
   error: null,
 };
 
-// Fetch orders from API (replace with your API call)
+// Fetch orders from API
 export const fetchOrders = createAsyncThunk("orders/fetchOrders", async () => {
-  const response = await fetch("/api/orders"); // adjust endpoint
-  return (await response.json()) as Order[];
+  const response = await api.get("/order");
+  return response.data as Order[];
+});
+
+// Fetch farmer orders from API
+export const fetchFarmerOrders = createAsyncThunk("orders/fetchFarmerOrders", async () => {
+  const response = await api.get("/farmer/orders");
+  return response.data as Order[];
 });
 
 export const ordersSlice = createSlice({
@@ -51,6 +55,18 @@ export const ordersSlice = createSlice({
     builder.addCase(fetchOrders.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message || "Failed to fetch orders";
+    });
+    builder.addCase(fetchFarmerOrders.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchFarmerOrders.fulfilled, (state, action: PayloadAction<Order[]>) => {
+      state.items = action.payload;
+      state.loading = false;
+    });
+    builder.addCase(fetchFarmerOrders.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message || "Failed to fetch farmer orders";
     });
   },
 });

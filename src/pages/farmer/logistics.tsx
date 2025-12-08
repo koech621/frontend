@@ -1,16 +1,16 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../store/store";
-import { fetchOrders } from "../../store/orderSlice";
+import { fetchFarmerOrders } from "../../store/orderSlice";
 
-export default function Orders() {
+export default function Logistics() {
   const dispatch = useDispatch<AppDispatch>();
   const { items, loading, error } = useSelector(
     (state: RootState) => state.order
   );
 
   useEffect(() => {
-    dispatch(fetchOrders());
+    dispatch(fetchFarmerOrders());
   }, [dispatch]);
 
   if (loading) return <p className="p-6 text-center">Loading orders...</p>;
@@ -18,10 +18,10 @@ export default function Orders() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-6">My Orders</h1>
+      <h1 className="text-2xl font-semibold mb-6">Order Logistics</h1>
 
       {items.length === 0 ? (
-        <p className="text-gray-500">You have no orders yet.</p>
+        <p className="text-gray-500">No orders yet.</p>
       ) : (
         <div className="space-y-4">
           {items.map((order) => (
@@ -31,11 +31,16 @@ export default function Orders() {
                 <span className="font-semibold">{order.status}</span>
               </div>
               <div className="text-gray-600">
-                <p>Product ID: {order.product_id}</p>
-                <p>Quantity: {order.quantity}</p>
+                <p>
+                  {order.product_name} x {order.quantity}
+                </p>
               </div>
-              <div className="mt-2 font-bold">Total: KES {order.total_amount}</div>
-              <div className="text-sm text-gray-500">Ordered on: {new Date(order.order_date).toLocaleDateString()}</div>
+              <div className="mt-2 font-bold">
+                Total: KES {order.total_amount}
+              </div>
+              <div className="mt-2 text-sm text-gray-500">
+                Driver is picking up your product
+              </div>
             </div>
           ))}
         </div>

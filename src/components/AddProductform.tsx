@@ -15,19 +15,24 @@ export default function AddProductForm() {
   const { register, handleSubmit, reset, } = useForm<ProductFormInputs>();
 
   const onSubmit = (data: ProductFormInputs) => {
+    console.log("Form data:", data);
     if (!farmer?.id) {
+      console.log("Farmer not logged in, user:", farmer);
       alert("Farmer not logged in");
       return;
     }
 
+    console.log("Dispatching addProduct with:", { ...data, farmer_id: farmer.id });
     dispatch(addProduct({ ...data, farmer_id: farmer.id }))
       .unwrap() // unwrap promise to catch errors
-      .then(() => {
+      .then((result) => {
+        console.log("Product added successfully:", result);
         setSuccess(true); // show success message
         reset(); // clear form
-        setTimeout(() => setSuccess(false), 3000); 
+        setTimeout(() => setSuccess(false), 3000);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log("Error adding product:", error);
         alert("Failed to add product");
       });
   };
@@ -45,15 +50,15 @@ export default function AddProductForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Product Name */}
-        <input type="text" placeholder="Product Name" {...register("product_name", { required: true })} />
+        <input type="text" placeholder="Product Name" {...register("product_name", { required: true })} className="w-full border p-2 rounded" />
         {/* Category */}
-        <input type="text" placeholder="Category" {...register("category")} />
+        <input type="text" placeholder="Category" {...register("category")} className="w-full border p-2 rounded" />
         {/* Stock Quantity */}
-        <input type="number" placeholder="Quantity" {...register("stock_quantity", { required: true, valueAsNumber: true })} />
+        <input type="number" placeholder="Quantity" {...register("stock_quantity", { required: true, valueAsNumber: true })} className="w-full border p-2 rounded" />
         {/* Price */}
-        <input type="number" placeholder="Price" {...register("price", { required: true, valueAsNumber: true })} />
+        <input type="number" placeholder="Price" {...register("price", { required: true, valueAsNumber: true })} className="w-full border p-2 rounded" />
         {/* Description */}
-        <textarea placeholder="Description" {...register("description")} />
+        <textarea placeholder="Description" {...register("description")} className="w-full border p-2 rounded" rows={4} />
         <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add Product</button>
       </form>
     </div>

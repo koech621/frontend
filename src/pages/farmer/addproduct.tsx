@@ -4,20 +4,17 @@ import type { AppDispatch, RootState } from "../../store/store";
 import { addProduct } from "../../store/productSlice";
 
 type ProductFormInputs = {
-  farmer_id:number;
   product_name: string;
   description: string;
   price: number;
   stock_quantity: number;
-  category?: string;
+  category: string;
 };
 
 export default function AddProductForm() {
   const dispatch = useDispatch<AppDispatch>();
 
-  const farmer_id = useSelector(
-    (state: RootState) => state.auth.user?.farmer_id
-  );
+  const user = useSelector((state: RootState) => state.auth.user);
 
   const {
     register,
@@ -27,12 +24,12 @@ export default function AddProductForm() {
   } = useForm<ProductFormInputs>();
 
   const onSubmit = (data: ProductFormInputs) => {
-    if (!farmer_id) {
+    if (!user?.id) {
       alert("You must be logged in as a farmer!");
       return;
     }
 
-    dispatch(addProduct({ ...data, farmer_id }));
+    dispatch(addProduct({ ...data, farmer_id: user.id }));
     reset();
   };
 
@@ -90,9 +87,12 @@ export default function AddProductForm() {
           <label className="block mb-1 font-semibold">Category</label>
           <input
             type="text"
-            {...register("category")}
+            {...register("category", { required: "Category is required" })}
             className="w-full border p-2 rounded"
           />
+          {errors.category && (
+            <p className="text-red-600 text-sm">{errors.category.message}</p>
+          )}
         </div>
 
         <button

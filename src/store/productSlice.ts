@@ -49,9 +49,17 @@ const productsSlice = createSlice({
     builder
       // FETCH
       .addCase(fetchProducts.fulfilled, (state, action) => {
-        state.items = action.payload;
-        state.loading = false;
-      })
+       state.items = action.payload.map((p: any) => ({
+       id: p.product_id,  
+       farmer_id: p.farmer_id,
+       product_name: p.product_name,
+       category: p.category,
+       price: p.price,
+       stock_quantity: p.stock_quantity,
+       description: p.description,
+            }));
+  state.loading = false;
+})
       // CREATE
       .addCase(addProduct.fulfilled, (state, action) => {
         state.items.push(action.payload);

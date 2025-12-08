@@ -11,7 +11,7 @@ export interface RegisterPayload {
   full_name: string;
   email: string;
   phone?: string;
-  role: "farmer" | "customer" | null;
+  role: "farmer" | "customer" | "admin" | null;
   password: string;
 }
 

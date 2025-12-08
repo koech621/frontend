@@ -11,12 +11,19 @@ import ProtectedRoute from "./components/protectedRoute";
 import LandingPage from "./pages/customer/landingpage";
 import CustomerProducts from "./pages/customer/products";
 import CustomerOrders from "./pages/customer/order";
+import CustomerPayments from "./pages/customer/payments";
 import FarmerDashboard from "./pages/farmer/farmerdashboard";
 import AddProductForm from "./components/AddProductform";
 import FarmerOrders from "./pages/farmer/order";
+import FarmerLogistics from "./pages/farmer/logistics";
+import FarmerPayments from "./pages/farmer/payments";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Payments from "./pages/customer/payment";
+import AdminDashboard from "./pages/admin/admindashboard"
+import Orders from "./pages/admin/orders";
+import AdminPayments from "./pages/admin/payments";
+import Drivers from "./pages/admin/drivers";
 
 export default function App() {
   const { isLoggedIn, role } = useSelector((state: RootState) => state.auth);
@@ -38,6 +45,14 @@ export default function App() {
           element={
             <ProtectedRoute isAllowed={isLoggedIn && role === "customer"}>
               <CustomerOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <ProtectedRoute isAllowed={isLoggedIn && role === "customer"}>
+              <CustomerPayments />
             </ProtectedRoute>
           }
         />
@@ -76,6 +91,56 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/farmer/logistics"
+          element={
+            <ProtectedRoute isAllowed={isLoggedIn && role === "farmer"}>
+              <FarmerLogistics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/payments"
+          element={
+            <ProtectedRoute isAllowed={isLoggedIn && role === "farmer"}>
+              <FarmerPayments />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+        path="/admin/dashboard"
+        element={
+        <ProtectedRoute isAllowed={isLoggedIn && role === "admin"}>
+        <AdminDashboard />
+        </ProtectedRoute>
+              }
+         />
+        <Route
+        path="/admin/orders"
+       element={
+        <ProtectedRoute isAllowed={isLoggedIn && role === "admin"}>
+        <Orders />
+       </ProtectedRoute>
+       }
+        />
+       <Route
+       path="/admin/payments"
+       element={
+       <ProtectedRoute isAllowed={isLoggedIn && role === "admin"}>
+       <AdminPayments />
+       </ProtectedRoute>
+       }
+      />
+      <Route
+      path="/admin/drivers"
+      element={
+      <ProtectedRoute isAllowed={isLoggedIn && role === "admin"}>
+      <Drivers />
+    </ProtectedRoute>
+     }
+      />
+
+
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />

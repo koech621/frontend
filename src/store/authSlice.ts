@@ -3,39 +3,53 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import * as authApi from "../api/auth";
 import type { AuthResponse } from "../api/auth";
 
-export type UserRole = "farmer" | "customer" | null;
+export type UserRole = "farmer" | "customer" | "admin" | null;
 
 export interface AuthUser {
-  id: number | null;
-  email: string | null;
-  full_name: string | null;
-  role: string | null;
+  id: number;
+  email: string;
+  full_name: string;
+  role: UserRole;
 }
 
 export interface AuthState {
   isLoggedIn: boolean;
-  role: string | null;
   token: string | null;
+  role: UserRole;
   loading: boolean;
   error: string | null;
   user: AuthUser | null;
 }
 
+//Utility: Normalize backend user structure → frontend format
+const normalizeUser = (rawUser: any): AuthUser => ({
+  id: rawUser.id ?? rawUser.user_id,     // FIXED MAPPING
+  email: rawUser.email,
+  full_name: rawUser.full_name,
+  role: rawUser.role,
+});
+
+// Load from localStorage safely
+const loadStoredUser = (): AuthUser | null => {
+  const id = localStorage.getItem("id");
+  if (!id) return null;
+
+  return {
+    id: Number(id),
+    email: localStorage.getItem("email") || "",
+    full_name: localStorage.getItem("full_name") || "",
+    role: (localStorage.getItem("role") as UserRole) || null,
+  };
+};
+
 // ---- INITIAL STATE ----
 const initialState: AuthState = {
   isLoggedIn: !!localStorage.getItem("token"),
-  role: localStorage.getItem("role") || null,
-  token: localStorage.getItem("token") || null,
+  token: localStorage.getItem("token"),
+  role: (localStorage.getItem("role") as UserRole) || null,
   loading: false,
   error: null,
-  user: localStorage.getItem("id")
-    ? {
-        id: Number(localStorage.getItem("id")),
-        email: localStorage.getItem("email"),
-        full_name: localStorage.getItem("full_name"),
-        role: localStorage.getItem("role"),
-      }
-    : null,
+  user: loadStoredUser(),
 };
 
 // ---- LOGIN ----
@@ -43,8 +57,8 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async (payload: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const data = await authApi.login(payload); // Backend returns: { token, user }
-      return data as AuthResponse;
+      const response = await authApi.login(payload); // returns { token, user }
+      return response as AuthResponse;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || "Login failed");
     }
@@ -59,95 +73,86 @@ export const registerUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const data = await authApi.register(payload);
-      return data;
+      const response = await authApi.register(payload);
+      return response;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || "Registration failed");
     }
   }
 );
 
-// ---- SLICE ----
 const authSlice = createSlice({
   name: "auth",
   initialState,
+
   reducers: {
     logout(state) {
       state.isLoggedIn = false;
-      state.role = null;
       state.token = null;
+      state.role = null;
       state.user = null;
-      state.error = null;
-
       localStorage.clear();
     },
   },
 
   extraReducers: (builder) => {
-    // LOGIN PENDING
+    // LOGIN
     builder.addCase(loginUser.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
 
-    // LOGIN SUCCESS
     builder.addCase(
       loginUser.fulfilled,
       (state, action: PayloadAction<AuthResponse>) => {
         state.loading = false;
         state.isLoggedIn = true;
 
-        // Save token
+        // Normalize user
+        const normalized = normalizeUser(action.payload.user);
+
+        // Save state
+        state.user = normalized;
         state.token = action.payload.token;
+        state.role = normalized.role;
+
+        // Persist
         localStorage.setItem("token", action.payload.token);
-
-        // Save role
-        state.role = action.payload.user.role;
-        localStorage.setItem("role", action.payload.user.role ?? "");
-
-        // Save full user
-        state.user = {
-          id: action.payload.user.id,
-          email: action.payload.user.email,
-          full_name: action.payload.user.full_name,
-          role: action.payload.user.role,
-        };
-
-        // Save safely to localStorage
-        localStorage.setItem("id", String(action.payload.user.id));
-        localStorage.setItem("email", action.payload.user.email ?? "");
-        localStorage.setItem("full_name", action.payload.user.full_name ?? "");
+        localStorage.setItem("id", String(normalized.id));
+        localStorage.setItem("email", normalized.email);
+        localStorage.setItem("full_name", normalized.full_name);
+        localStorage.setItem("role", normalized.role ?? "");
       }
     );
 
-    // LOGIN FAIL
     builder.addCase(loginUser.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });
 
-    // REGISTER PENDING
+    // REGISTER
     builder.addCase(registerUser.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
 
-    // REGISTER SUCCESS
-    builder.addCase(
-      registerUser.fulfilled,
-      (state, action: PayloadAction<{ token: string; role?: UserRole }>) => {
-        state.loading = false;
-        state.isLoggedIn = true;
+    builder.addCase(registerUser.fulfilled, (state, action) => {
+      state.loading = false;
+      state.isLoggedIn = true;
 
-        state.token = action.payload.token;
-        state.role = action.payload.role ?? null;
+      const normalized = normalizeUser(action.payload.user);
 
-        localStorage.setItem("token", action.payload.token);
-        localStorage.setItem("role", action.payload.role ?? "");
-      }
-    );
+      state.user = normalized;
+      state.token = action.payload.token;
+      state.role = normalized.role;
 
-    // REGISTER FAIL
+      localStorage.setItem("token", action.payload.token);
+      localStorage.setItem("id", String(normalized.id));
+      localStorage.setItem("email", normalized.email);
+      localStorage.setItem("full_name", normalized.full_name);
+      localStorage.setItem("role", normalized.role ?? "");
+    });
+
     builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
